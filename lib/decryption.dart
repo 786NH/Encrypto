@@ -3,12 +3,14 @@ import '/login.dart';
 import 'dart:convert';
 import 'dart:async';
 import 'dart:typed_data';
-import 'dart:ffi';
+//import 'dart:ffi';
 import 'dart:io';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter/foundation.dart';
+import 'package:file_picker/file_picker.dart';
+import 'dart:ui';
 
 class decryption extends StatefulWidget {
   const decryption({Key? key}) : super(key: key);
@@ -56,7 +58,7 @@ Future<bool> Decryption(var _paths) async {
         bytes_f[i] = bytes[i] ^ passsum;
       }
       var newPath =
-          _paths['Encryp_path'] + "/" + "Decryption" + "/" + decy_file_name;
+          _paths['Encryp_path'] + "/" + "Decrypted_Files" + "/" + decy_file_name;
       File f = new File(newPath);
       if (!await f.exists()) {
         await f.create(recursive: true);
@@ -64,13 +66,22 @@ Future<bool> Decryption(var _paths) async {
       f.writeAsBytesSync(bytes_f);
       print("Successfull");
       print("Decryption is done...");
-    } 
-    else {
+      FilePicker.platform.clearTemporaryFiles();
+    } else {
       print("Wrong password");
-       return false;
+      return false;
     }
   } catch (e) {
     print(e);
+    EasyLoading.dismiss();
+    Fluttertoast.showToast(
+              msg: "File Is Decrypted Unsuccessfully.",
+              toastLength: Toast.LENGTH_SHORT,
+              gravity: ToastGravity.TOP,
+              timeInSecForIosWeb: 1,
+              backgroundColor: Colors.black,
+              textColor: Colors.white,
+              fontSize: 18.0);
   }
 
   return true;
@@ -98,8 +109,8 @@ class _decPathState extends State<decryption> {
         child: SingleChildScrollView(
           reverse: true,
           child: Container(
-            height: 315,
-            width: 350,
+            height: 306,
+            width: 340,
             decoration: const BoxDecoration(
               image: DecorationImage(
                 image: AssetImage('assets/images/decrypt.png'),
@@ -129,7 +140,7 @@ class _decPathState extends State<decryption> {
                       autofocus: true,
                       style: TextStyle(
                         color: Colors.white,
-                        fontSize: 18.4,
+                        fontSize: 15.6,
                       ),
                       obscureText: is_obsecure,
                       maxLength: 8,
@@ -147,7 +158,8 @@ class _decPathState extends State<decryption> {
                           ),
                           hintText: 'Password',
                           hintStyle: new TextStyle(
-                              color: Color.fromARGB(255, 215, 195, 136)),
+                              color: Color.fromARGB(255, 215, 195, 136),
+                              fontSize: 13.3),
                           border: InputBorder.none),
                     ),
                   ),
@@ -165,10 +177,10 @@ class _decPathState extends State<decryption> {
                       },
                       child: Padding(
                         padding:
-                            EdgeInsets.only(left: 194.4, right: 1, bottom: 3.7),
+                            EdgeInsets.only(left: 192.6, right: 1, bottom: 3.8),
                         child: Container(
-                          width: 73,
-                          height: 48,
+                          width: 64,
+                          height: 43,
                           decoration: const BoxDecoration(
                             image: DecorationImage(
                               image: AssetImage('assets/images/cancel.png'),
@@ -199,13 +211,14 @@ class _decPathState extends State<decryption> {
                               ),
                             );
                             // result=null;
-                    
+
                             print("Initial State");
                             setState(() {
                               print("I am in set state");
                               check_file = 'Select a File.';
                               print(check_file);
                             });
+
                             Fluttertoast.showToast(
                                 msg: "File Decrypted Successfully.",
                                 toastLength: Toast.LENGTH_SHORT,
@@ -214,10 +227,18 @@ class _decPathState extends State<decryption> {
                                 backgroundColor: Colors.black,
                                 textColor: Colors.white,
                                 fontSize: 16.0);
-                          }
-                          else{
+                            Fluttertoast.showToast(
+                                msg:
+                                    "Please! Share The Encrypted Files As Document🗄️.",
+                                toastLength: Toast.LENGTH_SHORT,
+                                gravity: ToastGravity.TOP,
+                                timeInSecForIosWeb: 2,
+                                backgroundColor: Colors.black,
+                                textColor: Colors.white,
+                                fontSize: 15.8);
+                          } else {
                             EasyLoading.dismiss();
-                              Fluttertoast.showToast(
+                            Fluttertoast.showToast(
                                 msg: "Password Is Incorrect.",
                                 toastLength: Toast.LENGTH_SHORT,
                                 gravity: ToastGravity.CENTER,
@@ -225,7 +246,8 @@ class _decPathState extends State<decryption> {
                                 backgroundColor: Colors.black,
                                 textColor: Colors.white,
                                 fontSize: 16.0);
-                                _textEditing.clear();
+                            _textEditing.clear();
+                            
                           }
                         }
                       },
@@ -234,10 +256,10 @@ class _decPathState extends State<decryption> {
 
                       child: Padding(
                         padding:
-                            EdgeInsets.only(left: 10.8, right: 6, bottom: 6),
+                            EdgeInsets.only(left: 15, right: 6, bottom: 6),
                         child: Container(
-                          width: 45,
-                          height: 50,
+                          width: 42,
+                          height: 47,
                           decoration: const BoxDecoration(
                             image: DecorationImage(
                               image: AssetImage('assets/images/ok.png'),

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:local_auth/local_auth.dart';
-import 'package:pass_gen/login.dart';
+import 'package:Encrypto/login.dart';
 //import 'login.dart';
 
 class AuthPath extends StatefulWidget{
@@ -14,14 +14,14 @@ class AuthPath extends StatefulWidget{
 class _AuthPathState extends State<AuthPath> {
 
   String g='';
-  bool? _hasBioMetric;
+  bool _hasBioMetric=false;
   LocalAuthentication authentication = LocalAuthentication();
 
   Future<void> _checkbio() async{
     try{
       _hasBioMetric=  await authentication.isDeviceSupported();
       print(_hasBioMetric);
-      if(_hasBioMetric!){
+      if(_hasBioMetric){
       _getAuth();
       }
       else{
@@ -37,15 +37,17 @@ class _AuthPathState extends State<AuthPath> {
     bool isAuth=false;
     try{
       g=authentication.hashCode.toString();
-      print(authentication.hashCode.toInt());
+     // print(authentication.hashCode.toInt());
       isAuth= await authentication.authenticate(
         localizedReason: 'Scan your finger print to access the app',
         options: const AuthenticationOptions(
        useErrorDialogs :true, 
        stickyAuth : true,
+       biometricOnly:true,
         ),
       ); 
     if(isAuth){
+      print("Login successful");
       Navigator.push(context,MaterialPageRoute(builder: ((context) => Password_Gen())));
     }
        

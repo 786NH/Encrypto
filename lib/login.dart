@@ -1,9 +1,9 @@
 import 'dart:io';
 import 'dart:ffi';
-import 'dart:io';
 import 'dart:convert';
 import 'dart:async';
 import 'dart:typed_data';
+import 'package:Encrypto/file_storage.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart' hide Intent;
 import 'package:flutter/widgets.dart' hide Intent;
@@ -17,7 +17,8 @@ import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:receive_sharing_intent/receive_sharing_intent.dart';
 import 'package:device_info_plus/device_info_plus.dart';
-
+import 'package:url_launcher/url_launcher.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class Password_Gen extends StatefulWidget {
   const Password_Gen({Key? key}) : super(key: key);
@@ -28,12 +29,45 @@ class Password_Gen extends StatefulWidget {
 
 RegExp r = new RegExp("\\.N!");
 
+final Uri _url = Uri.parse("https://docs.google.com/forms/d/e/1FAIpQLSdXKh5i70OHtkA7IARFWx0VXZORUC7TMt1NEzhgcRuB3oSx1Q/viewform?usp=sf_link");
+final Uri url = Uri.parse("https://youtu.be/bvpolNbxxvg");
+Future<void> _launchUrl() async {
+  if (!await launchUrl(_url,
+  mode: LaunchMode.externalApplication,)) {
+    throw Exception('Could not launch $_url');
+  }
+}
+Future<void> ulaunchUrl() async {
+  if (!await launchUrl(url,
+  mode: LaunchMode.externalApplication,)) {
+    throw Exception('Could not launch $_url');
+  }
+}
+String? encodeQueryParameters(Map<String, String> params) {
+  return params.entries
+      .map((MapEntry<String, String> e) =>
+          '${Uri.encodeComponent(e.key)}=${Uri.encodeComponent(e.value)}')
+      .join('&');
+}
+final Uri emailLaunchUri = Uri(
+    scheme: 'mailto',
+    path: 'navedhasanmbd12@gmail.com',
+     query: encodeQueryParameters(<String, String>{
+      'subject': 'Contact Us',
+    }),
+  );
+  String ?ver;
 Future<bool> _request_per(Permission permission) async {
+
   print("I am in request permission");
   try {
+     
     AndroidDeviceInfo build = await DeviceInfoPlugin().androidInfo;
     print("1");
-    print(build.version.sdkInt);
+    
+    ver=build.version.sdkInt.toString();
+    print(ver);
+   // int s=int.parse(ver??'');
     if ((build.version.sdkInt) >=30) {
       var re = await Permission.manageExternalStorage.request();
       print(re);
@@ -95,6 +129,7 @@ Future<bool> save_file() async {
         return true;
       }
     }
+    
   } catch (e) {
     print(e);
   }
@@ -111,17 +146,34 @@ String check_file = "Select a File.";
 
 String int_check = "initial";
 String prev = 'initial';
-
+List<SharedMediaFile>? _sharedFiles;
 String file_name_toast = '';
+void setFile(String name) {
+    String sub_file = '';
+    String sub_file_ext = '';
+
+    if (name.contains(".") && name.length > 20) {
+      sub_file = name.substring(0, 20);
+      sub_file_ext = name.substring(name.lastIndexOf("."));
+      sub_file_ext = ".." + sub_file_ext;
+    } else if (filename.length > 20) {
+      sub_file = name.substring(0, 20) + "...";
+    } else {
+      sub_file = name;
+    }
+    file_name_toast = sub_file + sub_file_ext;
+  }
+
 
 class _Password_gen extends State<Password_Gen> {
   late StreamSubscription _intentDataStreamSubscription;
-  List<SharedMediaFile>? _sharedFiles;
+  
   String? _sharedText;
   @override
   void initState() {
     super.initState();
     save_file();
+    
     _init();
   }
 
@@ -147,11 +199,12 @@ class _Password_gen extends State<Password_Gen> {
             Fluttertoast.showToast(
                 msg: "File Is Loaded.",
                 toastLength: Toast.LENGTH_SHORT,
-                gravity: ToastGravity.SNACKBAR,
+                gravity: ToastGravity.TOP,
                 timeInSecForIosWeb: 1,
                 backgroundColor: Colors.black,
                 textColor: Colors.white,
-                fontSize: 18.0);
+                fontSize: 18.0.sp);
+               // textScaleFactor: 1.0;
             prev = int_check;
           }
         }
@@ -181,11 +234,12 @@ class _Password_gen extends State<Password_Gen> {
             Fluttertoast.showToast(
                 msg: "File Is Loaded.",
                 toastLength: Toast.LENGTH_SHORT,
-                gravity: ToastGravity.SNACKBAR,
+                gravity: ToastGravity.TOP,
                 timeInSecForIosWeb: 1,
                 backgroundColor: Colors.black,
                 textColor: Colors.white,
                 fontSize: 18.0);
+               // textScaleFactor: 1.0;
             prev = int_check;
           }
         }
@@ -209,22 +263,7 @@ class _Password_gen extends State<Password_Gen> {
   String? cont;
   var myfile;
 
-  void setFile(String name) {
-    String sub_file = '';
-    String sub_file_ext = '';
-
-    if (name.contains(".") && name.length > 20) {
-      sub_file = name.substring(0, 20);
-      sub_file_ext = name.substring(name.lastIndexOf("."));
-      sub_file_ext = ".." + sub_file_ext;
-    } else if (filename.length > 20) {
-      sub_file = name.substring(0, 20) + "...";
-    } else {
-      sub_file = name;
-    }
-    file_name_toast = sub_file + sub_file_ext;
-  }
-
+  
   void pickfile() async {
     print("Test..");
     String sub_file = '';
@@ -233,7 +272,9 @@ class _Password_gen extends State<Password_Gen> {
       setState(() {
         isLoading = true;
       });
+     // textScaleFactor: 1.0;
       EasyLoading.show(status: "File is loading...");
+      
       result = await FilePicker.platform.pickFiles(
         type: FileType.any,
         allowMultiple: false,
@@ -243,7 +284,7 @@ class _Password_gen extends State<Password_Gen> {
 
         pickedfile = result!.files.first;
         filename = result!.files.first.name;
-
+        print("Extension of the file is ....${pickedfile!.extension}");
         setFile(filename);
 
         EasyLoading.dismiss();
@@ -258,11 +299,12 @@ class _Password_gen extends State<Password_Gen> {
           Fluttertoast.showToast(
               msg: "File Is Loaded.",
               toastLength: Toast.LENGTH_SHORT,
-              gravity: ToastGravity.SNACKBAR,
+              gravity: ToastGravity.TOP,
               timeInSecForIosWeb: 1,
               backgroundColor: Colors.black,
               textColor: Colors.white,
-              fontSize: 18.0);
+              fontSize: 18.0.sp);
+             // textScaleFactor: 1.0;
         });
       } else if (result == null) {
         EasyLoading.dismiss();
@@ -274,9 +316,20 @@ class _Password_gen extends State<Password_Gen> {
       print('Success');
     } catch (e) {
       print(e);
+      Fluttertoast.showToast(
+              msg: "File Loaded Unsuccessfully",
+              toastLength: Toast.LENGTH_SHORT,
+              gravity: ToastGravity.TOP,
+              timeInSecForIosWeb: 1,
+              backgroundColor: Colors.black,
+              textColor: Colors.white,
+              fontSize: 18.0.sp,
+              );
+              
+      EasyLoading.dismiss();
     }
   }
-
+ 
   @override
   Widget build(BuildContext context) {
     var _media = MediaQuery.of(context);
@@ -315,7 +368,7 @@ class _Password_gen extends State<Password_Gen> {
                         
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
-                          children: const [
+                          children:  [
                             Text(
                               '.',
                               style: TextStyle(color: Colors.black),
@@ -323,14 +376,14 @@ class _Password_gen extends State<Password_Gen> {
                             Text(
                               'Encrypto',
                               style: TextStyle(
-                                  fontSize: 24,
-                                  color: Color.fromARGB(255, 232, 246, 186)),
+                                  fontSize: 24.sp,
+                                  color: Color.fromARGB(255, 232, 246, 186)),textScaleFactor: 1.0
                             ),
                             Text(
                               'By Naved Hasan',
                               style: TextStyle(
-                                  fontSize: 11,
-                                  color: Color.fromARGB(255, 230, 232, 222)),
+                                  fontSize: 11.sp,
+                                  color: Color.fromARGB(255, 230, 232, 222)),textScaleFactor: 1.0,
                             ),
                           ],
                         )
@@ -342,19 +395,35 @@ class _Password_gen extends State<Password_Gen> {
                
                 ListTile(
                   leading: Icon(Icons.contact_page,color:Colors.white,size: 26,),
-                   title: Text('Contact Us',style: TextStyle(color: Colors.white,fontSize: 15),),
+                   title: Text('Contact Us',style: TextStyle(color: Colors.white,fontSize: 15.sp),textScaleFactor: 1.0),
                    onTap: (){
                     print("Contact Us");
+                    launchUrl(emailLaunchUri);
                    },
                 ),
                 ListTile(
-                  leading: Icon(Icons.feedback,color: Colors.white,size: 26,),
-                  title: Text('Feedback',style: TextStyle(color: Colors.white,fontSize: 15),)
+                  leading: Icon(Icons.feedback,color: Colors.white,size: 26.sp,),
+                  title: Text('Feedback',style: TextStyle(color: Colors.white,fontSize: 15.sp),textScaleFactor: 1.0),
+                  onTap: () {
+                    _launchUrl();
+                  },
+                ),
+                ListTile(
+                  leading: Icon(Icons.youtube_searched_for,color: Colors.white,size: 27,),
+                  title: Text('How To Use ',style: TextStyle(color: Colors.white,fontSize: 15.sp),textScaleFactor: 1.0),
+                  onTap: () {
+                   ulaunchUrl();
+                  },
                 ),
                  ListTile(
                   leading: Icon(Icons.lightbulb_outline_rounded,color: Colors.white,size: 27,),
-                  title: Text('About',style: TextStyle(color: Colors.white,fontSize: 15),),
+                  title: Text('About',style: TextStyle(color: Colors.white,fontSize: 15.sp),textScaleFactor: 1.0),
+                  onTap: () {
+                    Navigator.pop(context);
+                    about(context);
+                  },
                 ),
+                
               ],
             ),
               
@@ -405,7 +474,7 @@ class _Password_gen extends State<Password_Gen> {
                       child: Text(
                         check_file,
                         style: TextStyle(
-                          fontSize: 15.4,
+                          fontSize: 14.1.sp,
                           background: Paint()
                             ..color = Colors.black
                             ..strokeWidth = 20
@@ -414,6 +483,7 @@ class _Password_gen extends State<Password_Gen> {
                             ..style = PaintingStyle.stroke,
                           color: Colors.white,
                         ),
+                        textScaleFactor: 1.0,
                       ),
                     ),
                     Padding(
@@ -528,15 +598,15 @@ class _Password_gen extends State<Password_Gen> {
                           ),
                         ),
                         onTap: () async{
-                        
-                         Fluttertoast.showToast(
-                                msg: "In Storage Under a Folder Named ''Encrypto'' ",
-                                toastLength: Toast.LENGTH_SHORT,
-                                gravity: ToastGravity.CENTER,
-                                timeInSecForIosWeb: 1,
-                                backgroundColor: Colors.black,
-                                textColor: Colors.white,
-                                fontSize: 16.0);
+                          if(result==null && _sharedFiles!.length == 0)
+                              check_file="Select a File.";
+                                Navigator.of(context).push(
+                                PageRouteBuilder(
+                                  opaque: false, // set to false
+                                  pageBuilder: (_, __, ___) => file_storage(),
+                                ),
+                              );
+
                         },
                       ),
                     )
@@ -545,6 +615,30 @@ class _Password_gen extends State<Password_Gen> {
           ]),
         )
       ],
+    );
+  }
+  about(BuildContext context) async {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return Center(
+    child: Container(
+    height: 535,
+    width: 335,
+       // child: Image.asset('assets/images/about.png'), 
+        decoration: const BoxDecoration(
+              image: DecorationImage(
+                image: AssetImage('assets/images/About.png'),
+                fit: BoxFit.cover,
+              ),
+            ),
+        
+  ),
+  
+  );
+          
+      
+      },
     );
   }
 }
